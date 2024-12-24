@@ -1,8 +1,8 @@
-
 package org.example;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
     private Socket socket;
@@ -26,7 +26,7 @@ public class ClientHandler implements Runnable {
                         String password = parts[2];
                         if (Database.validateUser(id, password)) {
                             writer.println("Login successful");
-                            // Open chat window logic here
+                            sendUserList(writer);
                         } else {
                             writer.println("Login failed");
                         }
@@ -58,5 +58,13 @@ public class ClientHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void sendUserList(PrintWriter writer) {
+        List<User> users = Database.getUsers();
+        for (User user : users) {
+            writer.println("user " + user.getUsername());
+        }
+        writer.println("end_of_list");
     }
 }

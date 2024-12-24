@@ -12,18 +12,16 @@ public class UserListWindow extends JFrame {
     private JList<String> userList;
     private Socket socket;
 
-    public UserListWindow(Socket socket) {
+    public UserListWindow(Socket socket, String currentUsername, List<String> users) {
         this.socket = socket;
-        setTitle("User List");
-        setSize(300, 400);
+        setTitle("User List - Logged in as: " + currentUsername);
+        setSize(400, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Fetch users from the server
-        List<User> users = Database.getUsers();
         DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (User user : users) {
-            listModel.addElement(user.getUsername());
+        for (String user : users) {
+            listModel.addElement(user);
         }
 
         userList = new JList<>(listModel);

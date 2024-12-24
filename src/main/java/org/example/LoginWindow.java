@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoginWindow extends JFrame {
     private JTextField idText;
@@ -50,7 +52,14 @@ public class LoginWindow extends JFrame {
                     String response = reader.readLine();
                     if ("Login successful".equals(response)) {
                         JOptionPane.showMessageDialog(null, "Login successful");
-                        SwingUtilities.invokeLater(() -> new UserListWindow(socket));
+                        List<String> users = new ArrayList<>();
+                        String line;
+                        while (!(line = reader.readLine()).equals("end_of_list")) {
+                            if (line.startsWith("user ")) {
+                                users.add(line.substring(5));
+                            }
+                        }
+                        SwingUtilities.invokeLater(() -> new UserListWindow(socket, idText.getText(), users)); // Pass the username and user list
                         dispose(); // Close the login window
                     } else {
                         JOptionPane.showMessageDialog(null, "Login failed");
