@@ -12,16 +12,17 @@ public class ChatWindow extends JFrame {
     private JTextArea inputArea;
     private JButton sendButton;
     private PrintWriter writer;
+    private BufferedReader reader;
 
     public ChatWindow(Socket socket, String username) {
         setTitle("Chat - " + username);
-        setSize(600, 400); // Increased size
+        setSize(600, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
         chatArea = new JTextArea();
         chatArea.setEditable(false);
-        inputArea = new JTextArea(3, 20); // 3 rows, 20 columns
+        inputArea = new JTextArea(3, 20);
         sendButton = new JButton("Send");
 
         setLayout(new BorderLayout());
@@ -34,6 +35,7 @@ public class ChatWindow extends JFrame {
 
         try {
             writer = new PrintWriter(socket.getOutputStream(), true);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error initializing writer: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -51,6 +53,8 @@ public class ChatWindow extends JFrame {
             }
         });
 
+        new Thread(this::receiveMessages).start();
+
         setVisible(true);
     }
 
@@ -66,6 +70,17 @@ public class ChatWindow extends JFrame {
             writer.println(username + ": " + message);
             chatArea.append("[" + timestamp + "] " + username + ": " + message + "\n");
             inputArea.setText("");
+        }
+    }
+
+    private void receiveMessages() {
+        try {
+            String message;
+            while ((message = reader.readLine()) != null) {
+                chatArea.append(message + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
