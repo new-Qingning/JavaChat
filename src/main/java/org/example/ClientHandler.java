@@ -1,9 +1,10 @@
+
 package org.example;
 
 import java.io.*;
 import java.net.Socket;
 
-public class ClientHandler extends Thread {
+public class ClientHandler implements Runnable {
     private Socket socket;
 
     public ClientHandler(Socket socket) {
@@ -12,10 +13,8 @@ public class ClientHandler extends Thread {
 
     @Override
     public void run() {
-        try (InputStream input = socket.getInputStream();
-             OutputStream output = socket.getOutputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-             PrintWriter writer = new PrintWriter(output, true)) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
 
             String message;
             while ((message = reader.readLine()) != null) {
@@ -52,6 +51,12 @@ public class ClientHandler extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -7,10 +7,13 @@ import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerWindow extends JFrame {
     private DefaultTableModel tableModel;
     private static final int PORT = 8421;
+    private ExecutorService threadPool;
 
     public ServerWindow() {
         setTitle("Server");
@@ -35,6 +38,9 @@ public class ServerWindow extends JFrame {
         loadUsers();
 
         setVisible(true);
+
+        // Initialize thread pool
+        threadPool = Executors.newCachedThreadPool();
 
         // Start server socket
         new Thread(this::startServer).start();
@@ -74,7 +80,7 @@ public class ServerWindow extends JFrame {
             System.out.println("Server is listening on port " + PORT);
             while (true) {
                 Socket socket = serverSocket.accept();
-                new ClientHandler(socket).start();
+                threadPool.execute(new ClientHandler(socket));
             }
         } catch (IOException e) {
             e.printStackTrace();
