@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ChatWindow extends JFrame {
     private JTextArea chatArea;
@@ -34,6 +36,7 @@ public class ChatWindow extends JFrame {
             writer = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error initializing writer: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
         sendButton.addActionListener(e -> sendMessage(username));
@@ -52,10 +55,16 @@ public class ChatWindow extends JFrame {
     }
 
     private void sendMessage(String username) {
+        if (writer == null) {
+            JOptionPane.showMessageDialog(this, "Writer is not initialized", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         String message = inputArea.getText().trim();
         if (!message.isEmpty()) {
+            String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
             writer.println(username + ": " + message);
-            chatArea.append("Me: " + message + "\n");
+            chatArea.append("[" + timestamp + "] " + username + ": " + message + "\n");
             inputArea.setText("");
         }
     }

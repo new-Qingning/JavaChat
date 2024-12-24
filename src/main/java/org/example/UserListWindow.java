@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.*;
 import java.net.Socket;
 import java.util.List;
 
@@ -32,7 +33,12 @@ public class UserListWindow extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     String selectedUsername = userList.getSelectedValue();
-                    SwingUtilities.invokeLater(() -> new ChatWindow(socket, selectedUsername));
+                    try {
+                        Socket chatSocket = new Socket(socket.getInetAddress(), socket.getPort());
+                        SwingUtilities.invokeLater(() -> new ChatWindow(chatSocket, selectedUsername));
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(null, "Error initializing chat: " + ex.getMessage());
+                    }
                 }
             }
         });
