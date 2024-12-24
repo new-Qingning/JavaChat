@@ -50,7 +50,8 @@ public class LoginWindow extends JFrame {
                     String response = reader.readLine();
                     if ("Login successful".equals(response)) {
                         JOptionPane.showMessageDialog(null, "Login successful");
-                        // Open chat window logic here
+                        SwingUtilities.invokeLater(() -> new UserListWindow(socket));
+                        dispose(); // Close the login window
                     } else {
                         JOptionPane.showMessageDialog(null, "Login failed");
                     }

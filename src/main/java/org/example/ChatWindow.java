@@ -2,97 +2,61 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.net.Socket;
 
 public class ChatWindow extends JFrame {
     private JTextArea chatArea;
     private JTextArea inputArea;
-    private String username;
+    private JButton sendButton;
+    private PrintWriter writer;
 
-    public ChatWindow(String username) {
-        this.username = username;
-        setTitle("Chat Window - " + username);
-        setSize(500, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public ChatWindow(Socket socket, String username) {
+        setTitle("Chat - " + username);
+        setSize(600, 400); // Increased size
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Create components
         chatArea = new JTextArea();
         chatArea.setEditable(false);
-        JScrollPane chatScrollPane = new JScrollPane(chatArea);
+        inputArea = new JTextArea(3, 20); // 3 rows, 20 columns
+        sendButton = new JButton("Send");
 
-        inputArea = new JTextArea(3, 20);
-        JScrollPane inputScrollPane = new JScrollPane(inputArea);
-
-        JButton sendButton = new JButton("Send");
-
-        // Set layout manager
         setLayout(new BorderLayout());
-
-        // Add components to the frame
-        add(chatScrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(chatArea), BorderLayout.CENTER);
 
         JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(inputScrollPane, BorderLayout.CENTER);
+        inputPanel.add(new JScrollPane(inputArea), BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
         add(inputPanel, BorderLayout.SOUTH);
 
-        // Load chat history
-        loadChatHistory();
+        try {
+            writer = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // Add action listener to the send button
-        sendButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                sendMessage();
+        sendButton.addActionListener(e -> sendMessage(username));
+        inputArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER && evt.isShiftDown()) {
+                    inputArea.append("\n");
+                } else if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    sendMessage(username);
+                    evt.consume();
+                }
             }
         });
 
         setVisible(true);
     }
 
-    private void loadChatHistory() {
-        File file = new File("/src"+username + ".txt");
-        if (file.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    chatArea.append(line + "\n");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void sendMessage() {
+    private void sendMessage(String username) {
         String message = inputArea.getText().trim();
         if (!message.isEmpty()) {
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            String formattedMessage = username + " [" + timestamp + "]: " + message;
-            chatArea.append(formattedMessage + "\n");
-            saveMessage(formattedMessage);
+            writer.println(username + ": " + message);
+            chatArea.append("Me: " + message + "\n");
             inputArea.setText("");
-        }
-    }
-
-    private void saveMessage(String message) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(username + ".txt", true))) {
-            writer.write(message);
-            writer.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        String username = JOptionPane.showInputDialog("Enter your username:");
-        if (username != null && !username.trim().isEmpty()) {
-            new ChatWindow(username.trim());
         }
     }
 }
