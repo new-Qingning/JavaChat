@@ -31,6 +31,21 @@ public class Database {
         }
     }
 
+    public static boolean registerUser(int id, String username, String password) {
+        String query = "INSERT INTO users (id, username, password) VALUES (?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
+            statement.setString(2, username);
+            statement.setString(3, password);
+            int rowsInserted = statement.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static List<User> getUsers() {
         List<User> users = new ArrayList<>();
         String query = "SELECT id, username, password FROM users";
