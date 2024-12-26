@@ -12,17 +12,17 @@ public class ConnectionWindow extends JFrame {
     private JTextField portText;
 
     public ConnectionWindow() {
-        setTitle("Connect to Server");
+        setTitle("连接到服务器");
         setSize(300, 150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Create components
-        JLabel ipLabel = new JLabel("IP Address:");
+        JLabel ipLabel = new JLabel("服务器地址:");
         ipText = new JTextField(20);
-        JLabel portLabel = new JLabel("Port:");
+        JLabel portLabel = new JLabel("端口:");
         portText = new JTextField(20);
-        JButton connectButton = new JButton("Connect");
+        JButton connectButton = new JButton("连接");
 
         // Set layout manager
         setLayout(new GridLayout(3, 2));
@@ -46,7 +46,7 @@ public class ConnectionWindow extends JFrame {
                     SwingUtilities.invokeLater(() -> new LoginWindow(socket));
                     dispose(); // Close the connection window
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, "Failed to connect to server");
+                    JOptionPane.showMessageDialog(null, "无法连接到服务器");
                 }
             }
         });

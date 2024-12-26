@@ -16,13 +16,13 @@ public class ServerWindow extends JFrame {
     private ExecutorService threadPool;
 
     public ServerWindow() {
-        setTitle("Server");
+        setTitle("聊天服务器");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Create components
-        JLabel ipLabel = new JLabel("IP Address: " + getIpAddress());
+        JLabel ipLabel = new JLabel("服务器IP地址: " + getIpAddress());
         String[] columnNames = { "ID", "Username", "Password" };
         tableModel = new DefaultTableModel(columnNames, 0);
         JTable userTable = new JTable(tableModel);
@@ -65,10 +65,10 @@ public class ServerWindow extends JFrame {
                     }
                 }
             }
-            return "No WLAN IP found";
+            return "未找到WLAN IP地址";
         } catch (SocketException e) {
             e.printStackTrace();
-            return "Unknown";
+            return "未知";
         }
     }
 

@@ -23,7 +23,7 @@ public class ChatWindow extends JFrame {
         this.socket = socket;
         this.sourceUser = sourceUser;
         this.targetUser = targetUser;
-        setTitle("Chat with " + targetUser);
+        setTitle("与 " + targetUser + " 聊天中");
         setSize(400, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -36,7 +36,7 @@ public class ChatWindow extends JFrame {
         inputArea.setLineWrap(true);
         inputArea.setWrapStyleWord(true);
 
-        sendButton = new JButton("Send");
+        sendButton = new JButton("发送");
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

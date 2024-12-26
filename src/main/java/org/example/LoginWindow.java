@@ -17,7 +17,7 @@ public class LoginWindow extends JFrame {
 
     public LoginWindow(Socket socket) {
         this.socket = socket;
-        setTitle("Login");
+        setTitle("登录");
         setSize(300, 150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -29,8 +29,8 @@ public class LoginWindow extends JFrame {
         passwordText = new JPasswordField(20);
         JLabel usernameLabel = new JLabel("Username:");
         usernameField = new JTextField(15);
-        JButton loginButton = new JButton("Login");
-        JButton registerButton = new JButton("Register");
+        JButton loginButton = new JButton("登录");
+        JButton registerButton = new JButton("注册");
 
         // Set layout manager
         setLayout(new GridLayout(4, 2));
@@ -76,7 +76,7 @@ public class LoginWindow extends JFrame {
             writer.println("login " + id + " " + password);
             String response = reader.readLine();
 
-            if ("Login successful".equals(response)) {
+            if ("登录成功".equals(response)) {
                 String actualUsername = Database.getUsernameById(id);
                 List<String> users = new ArrayList<>();
                 String line;
@@ -88,10 +88,10 @@ public class LoginWindow extends JFrame {
                 SwingUtilities.invokeLater(() -> new UserListWindow(socket, actualUsername, users));
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(null, "Login failed");
+                JOptionPane.showMessageDialog(null, "登录失败");
             }
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(null, "Connection error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "连接错误: " + ex.getMessage());
         }
     }
 }

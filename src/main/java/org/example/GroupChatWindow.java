@@ -15,7 +15,7 @@ public class GroupChatWindow extends JFrame {
 
     public GroupChatWindow(Socket socket, String username) {
         this.username = username;
-        setTitle("群聊 - " + username);
+        setTitle("群聊室 - " + username);
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -26,7 +26,7 @@ public class GroupChatWindow extends JFrame {
         inputArea = new JTextArea(3, 20);
         inputArea.setLineWrap(true);
 
-        sendButton = new JButton("Send");
+        sendButton = new JButton("发送");
         sendButton.addActionListener(e -> sendMessage());
 
         JPanel inputPanel = new JPanel(new BorderLayout());

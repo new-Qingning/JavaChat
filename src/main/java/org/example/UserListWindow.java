@@ -16,7 +16,7 @@ public class UserListWindow extends JFrame {
     public UserListWindow(Socket socket, String currentUsername, List<String> users) {
         this.socket = socket;
         this.currentUsername = currentUsername;
-        setTitle("用户列表 - Logged in as: " + currentUsername);
+        setTitle("在线用户 - 当前用户: " + currentUsername);
         setSize(400, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -55,10 +55,10 @@ public class UserListWindow extends JFrame {
                 startMessageListener(chatSocket, chatWindow);
             } else {
                 chatSocket.close();
-                JOptionPane.showMessageDialog(this, "Authentication failed: " + response);
+                JOptionPane.showMessageDialog(this, "身份验证失败");
             }
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(null, "Connection error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "连接错误: " + ex.getMessage());
         }
     }
 
@@ -87,7 +87,7 @@ public class UserListWindow extends JFrame {
                 }
             } catch (IOException e) {
                 SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(window, "Lost connection to group chat");
+                    JOptionPane.showMessageDialog(window, "群聊连接已断开");
                     window.dispose();
                 });
             }
@@ -103,7 +103,7 @@ public class UserListWindow extends JFrame {
                     SwingUtilities.invokeLater(() -> chatWindow.receiveMessage(msg));
                 }
             } catch (IOException e) {
-                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(chatWindow, "Connection lost"));
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(chatWindow, "连接已断开"));
                 chatWindow.dispose();
             }
         }).start();

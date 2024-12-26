@@ -57,10 +57,10 @@ public class ClientHandler implements Runnable {
             if (isValidUsername(requestedUsername)) {
                 this.username = requestedUsername;
                 writer.println("auth_success");
-                System.out.println("Auth success for user: " + username); // 添加调试日志
+                System.out.println("用户认证成功: " + username); // 添加调试日志
             } else {
                 writer.println("auth_failed");
-                System.out.println("Auth failed for user: " + requestedUsername); // 添加调试日志
+                System.out.println("用户认证失败: " + requestedUsername); // 添加调试日志
             }
         }
     }
@@ -84,10 +84,10 @@ public class ClientHandler implements Runnable {
             String password = parts[2];
             if (Database.validateUser(id, password)) {
                 this.username = Database.getUsernameById(id);
-                writer.println("Login successful");
+                writer.println("登录成功");
                 sendUserList(writer);
             } else {
-                writer.println("Login failed");
+                writer.println("登录失败");
             }
         } else {
             writer.println("Invalid login format");
@@ -135,7 +135,7 @@ public class ClientHandler implements Runnable {
             String content = parts[3];
 
             if (!sender.equals(username)) {
-                writer.println("error Invalid sender identity");
+                writer.println("error 无效的发送者身份");
                 return;
             }
 
@@ -149,7 +149,7 @@ public class ClientHandler implements Runnable {
             }
 
             if (!sent) {
-                writer.println("error User offline or not found");
+                writer.println("error 用户离线或未找到");
             }
         }
     }
