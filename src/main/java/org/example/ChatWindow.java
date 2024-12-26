@@ -2,85 +2,84 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class ChatWindow extends JFrame {
     private JTextArea chatArea;
     private JTextArea inputArea;
     private JButton sendButton;
     private PrintWriter writer;
-    private BufferedReader reader;
+    private String sourceUser;
+    private String targetUser;
+    private Socket socket;
+    private String username;
 
-    public ChatWindow(Socket socket, String username) {
-        setTitle("Chat - " + username);
-        setSize(600, 400);
+    public ChatWindow(Socket socket, String sourceUser, String targetUser) {
+        this.socket = socket;
+        this.sourceUser = sourceUser;
+        this.targetUser = targetUser;
+        setTitle("Chat with " + targetUser);
+        setSize(400, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
         chatArea = new JTextArea();
         chatArea.setEditable(false);
-        inputArea = new JTextArea(3, 20);
-        sendButton = new JButton("Send");
-
-        setLayout(new BorderLayout());
         add(new JScrollPane(chatArea), BorderLayout.CENTER);
+
+        inputArea = new JTextArea(3, 20);
+        inputArea.setLineWrap(true);
+        inputArea.setWrapStyleWord(true);
+
+        sendButton = new JButton("Send");
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessage();
+            }
+        });
 
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(new JScrollPane(inputArea), BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
+
         add(inputPanel, BorderLayout.SOUTH);
 
         try {
             writer = new PrintWriter(socket.getOutputStream(), true);
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error initializing writer: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        sendButton.addActionListener(e -> sendMessage(username));
-        inputArea.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER && evt.isShiftDown()) {
-                    inputArea.append("\n");
-                } else if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
-                    sendMessage(username);
-                    evt.consume();
-                }
-            }
-        });
-
-        new Thread(this::receiveMessages).start();
 
         setVisible(true);
     }
 
-    private void sendMessage(String username) {
-        if (writer == null) {
-            JOptionPane.showMessageDialog(this, "Writer is not initialized", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        String message = inputArea.getText().trim();
-        if (!message.isEmpty()) {
-            String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
-            writer.println(username + ": " + message);
-            chatArea.append("[" + timestamp + "] " + username + ": " + message + "\n");
-            inputArea.setText("");
-        }
+    public void receiveMessage(String message) {
+        SwingUtilities.invokeLater(() -> {
+            if (message.startsWith("private_msg ")) {
+                String[] parts = message.split(" ", 3);
+                if (parts.length == 3) {
+                    chatArea.append(String.format("%s -> Me: %s\n", parts[1], parts[2]));
+                }
+            } else if (message.startsWith("error ")) {
+                String error = message.substring(6);
+                JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            chatArea.setCaretPosition(chatArea.getDocument().getLength());
+        });
     }
 
-    private void receiveMessages() {
-        try {
-            String message;
-            while ((message = reader.readLine()) != null) {
-                chatArea.append(message + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void sendMessage() {
+        String message = inputArea.getText().trim();
+        if (!message.isEmpty()) {
+            writer.println("private " + sourceUser + " " + targetUser + " " + message);
+            chatArea.append(String.format("Me -> %s: %s\n", targetUser, message));
+            chatArea.setCaretPosition(chatArea.getDocument().getLength());
+            inputArea.setText("");
         }
     }
 }
