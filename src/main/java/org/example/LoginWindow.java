@@ -23,11 +23,11 @@ public class LoginWindow extends JFrame {
         setLocationRelativeTo(null);
 
         // Create components
-        JLabel idLabel = new JLabel("ID:");
+        JLabel idLabel = new JLabel("账号:");
         idText = new JTextField(20);
-        JLabel passwordLabel = new JLabel("Password:");
+        JLabel passwordLabel = new JLabel("密码:");
         passwordText = new JPasswordField(20);
-        JLabel usernameLabel = new JLabel("Username:");
+        JLabel usernameLabel = new JLabel("用户名:");
         usernameField = new JTextField(15);
         JButton loginButton = new JButton("登录");
         JButton registerButton = new JButton("注册");
@@ -66,15 +66,17 @@ public class LoginWindow extends JFrame {
     }
 
     private void handleLogin() {
-        try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try {
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             int id = Integer.parseInt(idText.getText());
             String password = new String(passwordText.getPassword());
-            String username = usernameField.getText().trim();
+            System.out.println("尝试登录: ID=" + id); // 添加调试日志
 
             writer.println("login " + id + " " + password);
             String response = reader.readLine();
+            System.out.println("服务器响应: " + response); // 添加调试日志
 
             if ("登录成功".equals(response)) {
                 String actualUsername = Database.getUsernameById(id);
@@ -88,10 +90,12 @@ public class LoginWindow extends JFrame {
                 SwingUtilities.invokeLater(() -> new UserListWindow(socket, actualUsername, users));
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(null, "登录失败");
+                JOptionPane.showMessageDialog(null, "登录失败：" + response);
             }
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "连接错误: " + ex.getMessage());
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "请输入有效的ID");
         }
     }
 }

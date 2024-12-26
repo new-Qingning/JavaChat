@@ -32,10 +32,17 @@ public class UserListWindow extends JFrame {
 
         add(new JScrollPane(userList), BorderLayout.CENTER);
 
-        // 添加群聊按钮
+        // 创建按钮面板
+        JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton groupChatButton = new JButton("加入群聊");
+        JButton anonymousButton = new JButton("匿名群聊");
+
         groupChatButton.addActionListener(e -> openGroupChat());
-        add(groupChatButton, BorderLayout.SOUTH);
+        anonymousButton.addActionListener(e -> openAnonymousChat());
+
+        buttonPanel.add(groupChatButton);
+        buttonPanel.add(anonymousButton);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         setVisible(true);
     }
@@ -78,6 +85,16 @@ public class UserListWindow extends JFrame {
         }
     }
 
+    private void openAnonymousChat() {
+        try {
+            Socket anonymousChatSocket = new Socket(socket.getInetAddress(), socket.getPort());
+            AnonymousGroupChatWindow chatWindow = new AnonymousGroupChatWindow(anonymousChatSocket);
+            startAnonymousMessageListener(anonymousChatSocket, chatWindow);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "无法连接到匿名群聊");
+        }
+    }
+
     private void startGroupMessageListener(Socket socket, GroupChatWindow window) {
         new Thread(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
@@ -88,6 +105,22 @@ public class UserListWindow extends JFrame {
             } catch (IOException e) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(window, "群聊连接已断开");
+                    window.dispose();
+                });
+            }
+        }).start();
+    }
+
+    private void startAnonymousMessageListener(Socket socket, AnonymousGroupChatWindow window) {
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                String message;
+                while ((message = reader.readLine()) != null) {
+                    window.receiveMessage(message);
+                }
+            } catch (IOException e) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(window, "匿名群聊连接已断开");
                     window.dispose();
                 });
             }

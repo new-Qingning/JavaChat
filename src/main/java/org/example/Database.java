@@ -19,13 +19,21 @@ public class Database {
 
     public static boolean validateUser(int id, String password) {
         String query = "SELECT * FROM users WHERE id = ? AND password = ?";
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        try (Connection connection = getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setInt(1, id);
             statement.setString(2, password);
+
+            System.out.println("执行SQL: " + query + " [id=" + id + ", password=" + password + "]"); // 添加调试日志
+
             ResultSet resultSet = statement.executeQuery();
-            return resultSet.next();
+            boolean valid = resultSet.next();
+            System.out.println("验证结果: " + valid); // 添加调试日志
+            return valid;
+
         } catch (SQLException e) {
+            System.out.println("数据库错误: " + e.getMessage()); // 添加调试日志
             e.printStackTrace();
             return false;
         }

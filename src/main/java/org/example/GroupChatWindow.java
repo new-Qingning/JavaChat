@@ -12,6 +12,7 @@ public class GroupChatWindow extends JFrame {
     private JButton sendButton;
     private PrintWriter writer;
     private String username;
+    private JCheckBox anonymousCheckBox; // 新增匿名选项
 
     public GroupChatWindow(Socket socket, String username) {
         this.username = username;
@@ -23,17 +24,28 @@ public class GroupChatWindow extends JFrame {
         chatArea.setEditable(false);
         add(new JScrollPane(chatArea), BorderLayout.CENTER);
 
+        // 创建底部面板
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+
+        // 创建输入区域面板
+        JPanel inputPanel = new JPanel(new BorderLayout());
         inputArea = new JTextArea(3, 20);
         inputArea.setLineWrap(true);
-
-        sendButton = new JButton("发送");
-        sendButton.addActionListener(e -> sendMessage());
-
-        JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(new JScrollPane(inputArea), BorderLayout.CENTER);
-        inputPanel.add(sendButton, BorderLayout.EAST);
 
-        add(inputPanel, BorderLayout.SOUTH);
+        // 创建右侧按钮面板
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        sendButton = new JButton("发送");
+        anonymousCheckBox = new JCheckBox("匿名发送");
+        rightPanel.add(anonymousCheckBox, BorderLayout.NORTH);
+        rightPanel.add(sendButton, BorderLayout.CENTER);
+
+        inputPanel.add(rightPanel, BorderLayout.EAST);
+        bottomPanel.add(inputPanel);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        sendButton.addActionListener(e -> sendMessage());
 
         try {
             writer = new PrintWriter(socket.getOutputStream(), true);
@@ -41,7 +53,6 @@ public class GroupChatWindow extends JFrame {
             e.printStackTrace();
         }
 
-        // 加载群聊历史记录
         loadGroupHistory();
         setVisible(true);
     }
@@ -57,10 +68,10 @@ public class GroupChatWindow extends JFrame {
     private void sendMessage() {
         String message = inputArea.getText().trim();
         if (!message.isEmpty()) {
-            writer.println("group " + username + " " + message);
-            chatArea.append("Me: " + message + "\n");
-            // 保存群聊消息到数据库
-            ChatHistory.saveGroupMessage(username, message);
+            String displayName = anonymousCheckBox.isSelected() ? "匿名用户" : username;
+            writer.println("group " + displayName + " " + message);
+            chatArea.append(anonymousCheckBox.isSelected() ? "我(匿名): " : "我: " + message + "\n");
+            ChatHistory.saveGroupMessage(displayName, message);
             inputArea.setText("");
             chatArea.setCaretPosition(chatArea.getDocument().getLength());
         }

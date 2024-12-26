@@ -35,6 +35,10 @@ public class ClientHandler implements Runnable {
                     handleLogin(message);
                 } else if (message.startsWith("register")) {
                     handleRegister(message);
+                } else if (message.startsWith("anonymous ")) {
+                    handleAnonymousMessage(message);
+                } else if (message.startsWith("anonymous_join ")) {
+                    handleAnonymousJoin(message);
                 }
             }
         } catch (IOException e) {
@@ -56,10 +60,10 @@ public class ClientHandler implements Runnable {
             // 验证用户名是否有效
             if (isValidUsername(requestedUsername)) {
                 this.username = requestedUsername;
-                writer.println("auth_success");
+                writer.println("认证成功");
                 System.out.println("用户认证成功: " + username); // 添加调试日志
             } else {
-                writer.println("auth_failed");
+                writer.println("认证失败");
                 System.out.println("用户认证失败: " + requestedUsername); // 添加调试日志
             }
         }
@@ -84,13 +88,15 @@ public class ClientHandler implements Runnable {
             String password = parts[2];
             if (Database.validateUser(id, password)) {
                 this.username = Database.getUsernameById(id);
+                System.out.println("用户登录成功: " + username); // 添加调试日志
                 writer.println("登录成功");
                 sendUserList(writer);
             } else {
+                System.out.println("用户登录失败: ID=" + id); // 添加调试日志
                 writer.println("登录失败");
             }
         } else {
-            writer.println("Invalid login format");
+            writer.println("登录格式错误");
         }
     }
 
@@ -101,9 +107,9 @@ public class ClientHandler implements Runnable {
             String username = parts[2];
             String password = parts[3];
             if (Database.registerUser(id, username, password)) {
-                writer.println("Register successful");
+                writer.println("注册成功");
             } else {
-                writer.println("Register failed");
+                writer.println("注册失败");
             }
         } else {
             writer.println("Invalid register format");
@@ -187,6 +193,34 @@ public class ClientHandler implements Runnable {
             for (ClientHandler handler : clientHandlers) {
                 if (!handler.equals(this)) { // 不是发送者才转发消息
                     handler.writer.println(sender + ": " + content);
+                }
+            }
+        }
+    }
+
+    private void handleAnonymousMessage(String message) {
+        String[] parts = message.split(" ", 3);
+        if (parts.length == 3) {
+            String anonymousId = parts[1];
+            String content = parts[2];
+
+            // 广播匿名消息给所有客户端
+            for (ClientHandler handler : clientHandlers) {
+                if (!handler.equals(this)) {
+                    handler.writer.println(anonymousId + ": " + content);
+                }
+            }
+        }
+    }
+
+    private void handleAnonymousJoin(String message) {
+        String[] parts = message.split(" ", 2);
+        if (parts.length == 2) {
+            String anonymousId = parts[1];
+            // 广播加入消息
+            for (ClientHandler handler : clientHandlers) {
+                if (!handler.equals(this)) {
+                    handler.writer.println("系统: " + anonymousId + " 加入了匿名群聊");
                 }
             }
         }

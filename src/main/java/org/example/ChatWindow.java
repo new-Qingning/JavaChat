@@ -74,11 +74,11 @@ public class ChatWindow extends JFrame {
             if (message.startsWith("private_msg ")) {
                 String[] parts = message.split(" ", 3);
                 if (parts.length == 3) {
-                    chatArea.append(String.format("%s -> Me: %s\n", parts[1], parts[2]));
+                    chatArea.append(String.format("%s -> 我: %s\n", parts[1], parts[2]));
                 }
-            } else if (message.startsWith("error ")) {
-                String error = message.substring(6);
-                JOptionPane.showMessageDialog(this, error, "Error", JOptionPane.ERROR_MESSAGE);
+            } else if (message.startsWith("错误: ")) {
+                String error = message.substring(3);
+                JOptionPane.showMessageDialog(this, error, "错误", JOptionPane.ERROR_MESSAGE);
             }
             chatArea.setCaretPosition(chatArea.getDocument().getLength());
         });
