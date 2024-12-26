@@ -50,12 +50,12 @@ public class UserListWindow extends JFrame {
             writer.println("auth " + currentUsername);
             String response = reader.readLine();
 
-            if ("加入群聊成功！".equals(response)) {
+            if ("auth_success".equals(response)) { // 修改这里，确保与服务器返回的消息匹配
                 ChatWindow chatWindow = new ChatWindow(chatSocket, currentUsername, selectedUsername);
                 startMessageListener(chatSocket, chatWindow);
             } else {
                 chatSocket.close();
-                JOptionPane.showMessageDialog(this, "Authentication failed");
+                JOptionPane.showMessageDialog(this, "Authentication failed: " + response);
             }
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Connection error: " + ex.getMessage());

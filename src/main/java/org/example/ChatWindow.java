@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 public class ChatWindow extends JFrame {
     private JTextArea chatArea;
@@ -55,7 +56,17 @@ public class ChatWindow extends JFrame {
             e.printStackTrace();
         }
 
+        // 加载历史记录
+        loadChatHistory();
         setVisible(true);
+    }
+
+    private void loadChatHistory() {
+        List<String> history = ChatHistory.getPrivateHistory(sourceUser, targetUser);
+        for (String msg : history) {
+            chatArea.append(msg + "\n");
+        }
+        chatArea.setCaretPosition(chatArea.getDocument().getLength());
     }
 
     public void receiveMessage(String message) {
@@ -79,6 +90,8 @@ public class ChatWindow extends JFrame {
             writer.println("private " + sourceUser + " " + targetUser + " " + message);
             chatArea.append(String.format("Me -> %s: %s\n", targetUser, message));
             chatArea.setCaretPosition(chatArea.getDocument().getLength());
+            // 保存消息到数据库
+            ChatHistory.savePrivateMessage(sourceUser, targetUser, message);
             inputArea.setText("");
         }
     }

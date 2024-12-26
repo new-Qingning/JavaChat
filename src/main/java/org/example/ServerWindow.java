@@ -23,7 +23,7 @@ public class ServerWindow extends JFrame {
 
         // Create components
         JLabel ipLabel = new JLabel("IP Address: " + getIpAddress());
-        String[] columnNames = {"ID", "Username", "Password"};
+        String[] columnNames = { "ID", "Username", "Password" };
         tableModel = new DefaultTableModel(columnNames, 0);
         JTable userTable = new JTable(tableModel);
 
@@ -44,6 +44,9 @@ public class ServerWindow extends JFrame {
 
         // Start server socket
         new Thread(this::startServer).start();
+
+        // 初始化数据库表
+        Database.initializeTables();
     }
 
     private String getIpAddress() {
@@ -51,7 +54,8 @@ public class ServerWindow extends JFrame {
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
-                if (networkInterface.isUp() && !networkInterface.isLoopback() && networkInterface.getDisplayName().contains("Wi-Fi")) {
+                if (networkInterface.isUp() && !networkInterface.isLoopback()
+                        && networkInterface.getDisplayName().contains("Wi-Fi")) {
                     Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                     while (inetAddresses.hasMoreElements()) {
                         InetAddress inetAddress = inetAddresses.nextElement();
@@ -71,7 +75,7 @@ public class ServerWindow extends JFrame {
     private void loadUsers() {
         List<User> users = Database.getUsers();
         for (User user : users) {
-            tableModel.addRow(new Object[]{user.getId(), user.getUsername(), user.getPassword()});
+            tableModel.addRow(new Object[] { user.getId(), user.getUsername(), user.getPassword() });
         }
     }
 

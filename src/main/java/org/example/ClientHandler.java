@@ -57,16 +57,24 @@ public class ClientHandler implements Runnable {
             if (isValidUsername(requestedUsername)) {
                 this.username = requestedUsername;
                 writer.println("auth_success");
+                System.out.println("Auth success for user: " + username); // 添加调试日志
             } else {
                 writer.println("auth_failed");
+                System.out.println("Auth failed for user: " + requestedUsername); // 添加调试日志
             }
         }
     }
 
     private boolean isValidUsername(String username) {
         // 检查是否是已登录的有效用户名
+        if (username == null || username.trim().isEmpty()) {
+            return false;
+        }
         List<User> users = Database.getUsers();
-        return users.stream().anyMatch(user -> user.getUsername().equals(username));
+        boolean isValid = users.stream()
+                .anyMatch(user -> user.getUsername().equals(username));
+        System.out.println("Username validation: " + username + " is " + (isValid ? "valid" : "invalid")); // 添加调试日志
+        return isValid;
     }
 
     private void handleLogin(String message) {

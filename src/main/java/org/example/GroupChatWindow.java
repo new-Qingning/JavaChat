@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
 
 public class GroupChatWindow extends JFrame {
     private JTextArea chatArea;
@@ -40,17 +41,28 @@ public class GroupChatWindow extends JFrame {
             e.printStackTrace();
         }
 
+        // 加载群聊历史记录
+        loadGroupHistory();
         setVisible(true);
+    }
+
+    private void loadGroupHistory() {
+        List<String> history = ChatHistory.getGroupHistory();
+        for (String msg : history) {
+            chatArea.append(msg + "\n");
+        }
+        chatArea.setCaretPosition(chatArea.getDocument().getLength());
     }
 
     private void sendMessage() {
         String message = inputArea.getText().trim();
         if (!message.isEmpty()) {
             writer.println("group " + username + " " + message);
-            // 显示自己发送的消息
             chatArea.append("Me: " + message + "\n");
-            chatArea.setCaretPosition(chatArea.getDocument().getLength());
+            // 保存群聊消息到数据库
+            ChatHistory.saveGroupMessage(username, message);
             inputArea.setText("");
+            chatArea.setCaretPosition(chatArea.getDocument().getLength());
         }
     }
 
