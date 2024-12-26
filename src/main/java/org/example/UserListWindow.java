@@ -16,7 +16,7 @@ public class UserListWindow extends JFrame {
     public UserListWindow(Socket socket, String currentUsername, List<String> users) {
         this.socket = socket;
         this.currentUsername = currentUsername;
-        setTitle("User List - Logged in as: " + currentUsername);
+        setTitle("用户列表 - Logged in as: " + currentUsername);
         setSize(400, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -31,6 +31,12 @@ public class UserListWindow extends JFrame {
         userList.addMouseListener(new MouseListener());
 
         add(new JScrollPane(userList), BorderLayout.CENTER);
+
+        // 添加群聊按钮
+        JButton groupChatButton = new JButton("加入群聊");
+        groupChatButton.addActionListener(e -> openGroupChat());
+        add(groupChatButton, BorderLayout.SOUTH);
+
         setVisible(true);
     }
 
@@ -44,7 +50,7 @@ public class UserListWindow extends JFrame {
             writer.println("auth " + currentUsername);
             String response = reader.readLine();
 
-            if ("auth_success".equals(response)) {
+            if ("加入群聊成功！".equals(response)) {
                 ChatWindow chatWindow = new ChatWindow(chatSocket, currentUsername, selectedUsername);
                 startMessageListener(chatSocket, chatWindow);
             } else {
@@ -54,6 +60,38 @@ public class UserListWindow extends JFrame {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Connection error: " + ex.getMessage());
         }
+    }
+
+    private void openGroupChat() {
+        try {
+            Socket groupChatSocket = new Socket(socket.getInetAddress(), socket.getPort());
+            PrintWriter writer = new PrintWriter(groupChatSocket.getOutputStream(), true);
+
+            // 发送群聊认证
+            writer.println("auth " + currentUsername);
+
+            GroupChatWindow groupChatWindow = new GroupChatWindow(groupChatSocket, currentUsername);
+            startGroupMessageListener(groupChatSocket, groupChatWindow);
+
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error joining group chat: " + ex.getMessage());
+        }
+    }
+
+    private void startGroupMessageListener(Socket socket, GroupChatWindow window) {
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                String message;
+                while ((message = reader.readLine()) != null) {
+                    window.receiveMessage(message);
+                }
+            } catch (IOException e) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(window, "Lost connection to group chat");
+                    window.dispose();
+                });
+            }
+        }).start();
     }
 
     private void startMessageListener(Socket socket, ChatWindow chatWindow) {

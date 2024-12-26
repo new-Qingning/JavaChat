@@ -23,7 +23,9 @@ public class ClientHandler implements Runnable {
             String message;
             while ((message = reader.readLine()) != null) {
                 System.out.println("Received: " + message);
-                if (message.startsWith("auth ")) {
+                if (message.startsWith("group ")) {
+                    handleGroupMessage(message);
+                } else if (message.startsWith("auth ")) {
                     handleAuth(message);
                 } else if (message.startsWith("private ")) {
                     handlePrivateMessage(message);
@@ -156,6 +158,27 @@ public class ClientHandler implements Runnable {
                 if (targetUser.equals(handler.getUsername())) {
                     handler.writer.println("MESSAGE|" + sourceUser + "|" + content);
                     break;
+                }
+            }
+        }
+    }
+
+    private void handleGroupMessage(String message) {
+        String[] parts = message.split(" ", 3);
+        if (parts.length == 3) {
+            String sender = parts[1];
+            String content = parts[2];
+
+            // 验证发送者身份
+            if (!sender.equals(username)) {
+                writer.println("error Invalid sender identity");
+                return;
+            }
+
+            // 广播到所有客户端（包括发送者）
+            for (ClientHandler handler : clientHandlers) {
+                if (!handler.equals(this)) { // 不是发送者才转发消息
+                    handler.writer.println(sender + ": " + content);
                 }
             }
         }
