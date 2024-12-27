@@ -60,11 +60,11 @@ public class ClientHandler implements Runnable {
             // 验证用户名是否有效
             if (isValidUsername(requestedUsername)) {
                 this.username = requestedUsername;
-                writer.println("认证成功");
-                System.out.println("用户认证成功: " + username); // 添加调试日志
+                writer.println("认证成功"); // 保持与客户端期望的响应一致
+                System.out.println("用户认证成功: " + username);
             } else {
                 writer.println("认证失败");
-                System.out.println("用户认证失败: " + requestedUsername); // 添加调试日志
+                System.out.println("用户认证失败: " + requestedUsername);
             }
         }
     }

@@ -57,7 +57,7 @@ public class UserListWindow extends JFrame {
             writer.println("auth " + currentUsername);
             String response = reader.readLine();
 
-            if ("auth_success".equals(response)) { // 修改这里，确保与服务器返回的消息匹配
+            if ("认证成功".equals(response)) { // 修改这里以匹配服务器返回的消息
                 ChatWindow chatWindow = new ChatWindow(chatSocket, currentUsername, selectedUsername);
                 startMessageListener(chatSocket, chatWindow);
             } else {

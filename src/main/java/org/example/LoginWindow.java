@@ -25,10 +25,10 @@ public class LoginWindow extends JFrame {
         // Create components
         JLabel idLabel = new JLabel("账号:");
         idText = new JTextField(20);
-        JLabel passwordLabel = new JLabel("密码:");
-        passwordText = new JPasswordField(20);
         JLabel usernameLabel = new JLabel("用户名:");
         usernameField = new JTextField(15);
+        JLabel passwordLabel = new JLabel("密码:");
+        passwordText = new JPasswordField(20);
         JButton loginButton = new JButton("登录");
         JButton registerButton = new JButton("注册");
 
@@ -38,10 +38,10 @@ public class LoginWindow extends JFrame {
         // Add components to the frame
         add(idLabel);
         add(idText);
-        add(passwordLabel);
-        add(passwordText);
         add(usernameLabel);
         add(usernameField);
+        add(passwordLabel);
+        add(passwordText);
         add(registerButton);
         add(loginButton);
 
