@@ -23,9 +23,12 @@ public class ChatHistory {
                 String msgSender = rs.getString("sender");
                 String message = rs.getString("message");
                 Timestamp timestamp = rs.getTimestamp("timestamp");
+                // 改进时间戳格式
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String timeStr = sdf.format(timestamp);
                 String formattedMsg = String.format("[%s] %s: %s",
-                        timestamp.toString(),
-                        msgSender.equals(sender) ? "Me" : msgSender,
+                        timeStr,
+                        msgSender.equals(sender) ? "我" : msgSender,
                         message);
                 history.add(formattedMsg);
             }

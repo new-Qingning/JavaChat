@@ -46,26 +46,41 @@ public class RegisterWindow extends JFrame {
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idText.getText());
-                String username = usernameText.getText();
-                String password = new String(passwordText.getPassword());
-                try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                     BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                    writer.println("register " + id + " " + username + " " + password);
-                    String response = reader.readLine();
-                    if ("Register successful".equals(response)) {
-                        JOptionPane.showMessageDialog(null, "Register successful");
-                        SwingUtilities.invokeLater(() -> new LoginWindow(socket));
-                        dispose(); // Close the register window
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Register failed");
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                handleRegister();
             }
         });
 
         setVisible(true);
+    }
+
+    private void handleRegister() {
+        try {
+            int id = Integer.parseInt(idText.getText().trim());
+            String username = usernameText.getText().trim();
+            String password = new String(passwordText.getPassword()).trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "用户名和密码不能为空");
+                return;
+            }
+
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            writer.println("register " + id + " " + username + " " + password);
+            String response = reader.readLine();
+
+            if (response.startsWith("注册成功")) {
+                JOptionPane.showMessageDialog(this, "注册成功！");
+                SwingUtilities.invokeLater(() -> new LoginWindow(socket));
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, response);
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "请输入有效的数字ID");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "连接错误: " + e.getMessage());
+        }
     }
 }

@@ -11,9 +11,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ServerWindow extends JFrame {
-    private DefaultTableModel tableModel;
     private static final int PORT = 8421;
     private ExecutorService threadPool;
+    private DefaultTableModel tableModel; // 移回类级别以便其他方法访问
 
     public ServerWindow() {
         setTitle("聊天服务器");
@@ -24,7 +24,7 @@ public class ServerWindow extends JFrame {
         // Create components
         JLabel ipLabel = new JLabel("服务器IP地址: " + getIpAddress());
         String[] columnNames = { "ID", "Username", "Password" };
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DefaultTableModel(columnNames, 0); // 初始化tableModel
         JTable userTable = new JTable(tableModel);
 
         // Set layout manager

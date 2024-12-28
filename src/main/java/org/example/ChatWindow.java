@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
+import java.util.List; // 添加这个导入
 
 public class ChatWindow extends JFrame {
     private JTextArea chatArea;
@@ -17,7 +17,6 @@ public class ChatWindow extends JFrame {
     private String sourceUser;
     private String targetUser;
     private Socket socket;
-    private String username;
 
     public ChatWindow(Socket socket, String sourceUser, String targetUser) {
         this.socket = socket;

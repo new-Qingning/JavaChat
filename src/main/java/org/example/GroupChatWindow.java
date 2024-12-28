@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
-import java.util.List;
+import java.util.List; // 添加这个导入
 
 public class GroupChatWindow extends JFrame {
     private JTextArea chatArea;
@@ -70,7 +70,8 @@ public class GroupChatWindow extends JFrame {
         if (!message.isEmpty()) {
             String displayName = anonymousCheckBox.isSelected() ? "匿名用户" : username;
             writer.println("group " + displayName + " " + message);
-            chatArea.append(anonymousCheckBox.isSelected() ? "我(匿名): " : "我: " + message + "\n");
+            // 修复消息显示格式
+            chatArea.append(anonymousCheckBox.isSelected() ? "我(匿名): " + message + "\n" : "我: " + message + "\n");
             ChatHistory.saveGroupMessage(displayName, message);
             inputArea.setText("");
             chatArea.setCaretPosition(chatArea.getDocument().getLength());

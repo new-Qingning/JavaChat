@@ -103,16 +103,27 @@ public class ClientHandler implements Runnable {
     private void handleRegister(String message) {
         String[] parts = message.split(" ");
         if (parts.length == 4) {
-            int id = Integer.parseInt(parts[1]);
-            String username = parts[2];
-            String password = parts[3];
-            if (Database.registerUser(id, username, password)) {
-                writer.println("注册成功");
-            } else {
-                writer.println("注册失败");
+            try {
+                int id = Integer.parseInt(parts[1]);
+                String username = parts[2];
+                String password = parts[3];
+
+                System.out.println("处理注册请求: ID=" + id + ", 用户名=" + username); // 调试日志
+
+                if (Database.registerUser(id, username, password)) {
+                    writer.println("注册成功");
+                    System.out.println("用户注册成功: " + username); // 调试日志
+                } else {
+                    writer.println("注册失败：用户ID或用户名已存在");
+                    System.out.println("用户注册失败: " + username); // 调试日志
+                }
+            } catch (NumberFormatException e) {
+                writer.println("注册失败：无效的ID格式");
+                System.out.println("注册失败：无效的ID格式"); // 调试日志
             }
         } else {
-            writer.println("Invalid register format");
+            writer.println("注册失败：格式错误");
+            System.out.println("注册失败：格式错误"); // 调试日志
         }
     }
 
@@ -156,23 +167,6 @@ public class ClientHandler implements Runnable {
 
             if (!sent) {
                 writer.println("error 用户离线或未找到");
-            }
-        }
-    }
-
-    private void handlePublicMessage(String message) {
-        String[] parts = message.split("\\|");
-        if (parts.length == 4) {
-            String sourceUser = parts[1];
-            String targetUser = parts[2];
-            String content = parts[3];
-
-            // 发送消息给目标用户
-            for (ClientHandler handler : clientHandlers) {
-                if (targetUser.equals(handler.getUsername())) {
-                    handler.writer.println("MESSAGE|" + sourceUser + "|" + content);
-                    break;
-                }
             }
         }
     }
@@ -223,12 +217,6 @@ public class ClientHandler implements Runnable {
                     handler.writer.println("系统: " + anonymousId + " 加入了匿名群聊");
                 }
             }
-        }
-    }
-
-    private void broadcastMessage(String message) {
-        for (ClientHandler clientHandler : clientHandlers) {
-            clientHandler.writer.println(message);
         }
     }
 

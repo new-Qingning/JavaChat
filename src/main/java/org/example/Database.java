@@ -40,15 +40,33 @@ public class Database {
     }
 
     public static boolean registerUser(int id, String username, String password) {
-        String query = "INSERT INTO users (id, username, password) VALUES (?, ?, ?)";
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, id);
-            statement.setString(2, username);
-            statement.setString(3, password);
-            int rowsInserted = statement.executeUpdate();
-            return rowsInserted > 0;
+        // 首先检查用户是否已存在
+        String checkQuery = "SELECT COUNT(*) FROM users WHERE id = ? OR username = ?";
+        String insertQuery = "INSERT INTO users (id, username, password) VALUES (?, ?, ?)";
+
+        try (Connection connection = getConnection()) {
+            // 检查是否存在重复用户
+            try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery)) {
+                checkStmt.setInt(1, id);
+                checkStmt.setString(2, username);
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    System.out.println("用户ID或用户名已存在"); // 调试日志
+                    return false;
+                }
+            }
+
+            // 插入新用户
+            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+                insertStmt.setInt(1, id);
+                insertStmt.setString(2, username);
+                insertStmt.setString(3, password);
+                int result = insertStmt.executeUpdate();
+                System.out.println("注册结果: " + (result > 0 ? "成功" : "失败")); // 调试日志
+                return result > 0;
+            }
         } catch (SQLException e) {
+            System.out.println("注册错误: " + e.getMessage()); // 调试日志
             e.printStackTrace();
             return false;
         }
