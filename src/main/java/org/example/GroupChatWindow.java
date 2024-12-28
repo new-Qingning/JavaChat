@@ -69,9 +69,8 @@ public class GroupChatWindow extends JFrame {
     private void sendMessage() {
         String message = inputArea.getText().trim();
         if (!message.isEmpty()) {
-            String displayName = anonymousCheckBox.isSelected() ? "匿名用户" : username;
+            String displayName = anonymousCheckBox.isSelected() ? "匿名用户" + (int) (Math.random() * 10000) : username; // 添加随机数避免冲突
             writer.println("group " + displayName + " " + message);
-            // 修复消息显示格式
             chatArea.append(anonymousCheckBox.isSelected() ? "我(匿名): " + message + "\n" : "我: " + message + "\n");
             ChatHistory.saveGroupMessage(displayName, message);
             inputArea.setText("");

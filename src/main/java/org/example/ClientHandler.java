@@ -177,15 +177,15 @@ public class ClientHandler implements Runnable {
             String sender = parts[1];
             String content = parts[2];
 
-            // 验证发送者身份
-            if (!sender.equals(username)) {
+            // 修改验证逻辑，允许匿名发送
+            if (!sender.equals(username) && !sender.startsWith("匿名用户")) {
                 writer.println("error Invalid sender identity");
                 return;
             }
 
-            // 广播到所有客户端（包括发送者）
+            // 广播到所有客户端
             for (ClientHandler handler : clientHandlers) {
-                if (!handler.equals(this)) { // 不是发送者才转发消息
+                if (!handler.equals(this)) {
                     handler.writer.println(sender + ": " + content);
                 }
             }

@@ -16,6 +16,7 @@ public class RegisterWindow extends JFrame {
     public RegisterWindow(Socket socket) {
         this.socket = socket;
         setTitle("注册");
+        IconLoader.setWindowIcon(this); // 添加图标设置
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

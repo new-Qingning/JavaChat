@@ -14,6 +14,7 @@ public class ConnectionWindow extends JFrame {
     public ConnectionWindow() {
         setTitle("连接到服务器");
         setSize(300, 150);
+        IconLoader.setWindowIcon(this);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
