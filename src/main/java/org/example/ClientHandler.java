@@ -44,12 +44,15 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            if (username != null) {
+                ServerWindow.updateUserStatus(username, false); // 更新状态为离线
+            }
+            clientHandlers.remove(this);
             try {
                 socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            clientHandlers.remove(this);
         }
     }
 
@@ -90,6 +93,7 @@ public class ClientHandler implements Runnable {
                 this.username = Database.getUsernameById(id);
                 System.out.println("用户登录成功: " + username); // 添加调试日志
                 writer.println("登录成功");
+                ServerWindow.updateUserStatus(username, true); // 更新状态为在线
                 sendUserList(writer);
             } else {
                 System.out.println("用户登录失败: ID=" + id); // 添加调试日志
