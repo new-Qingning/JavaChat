@@ -18,6 +18,7 @@ public class LoginWindow extends JFrame {
     public LoginWindow(Socket socket) {
         this.socket = socket;
         setTitle("登录");
+        IconLoader.setWindowIcon(this);
         setSize(300, 150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

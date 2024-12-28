@@ -15,10 +15,11 @@ public class RegisterWindow extends JFrame {
 
     public RegisterWindow(Socket socket) {
         this.socket = socket;
-        setTitle("Register");
+        setTitle("注册");
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        IconLoader.setWindowIcon(this);
 
         // Create components
         JLabel idLabel = new JLabel("ID:");

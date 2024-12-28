@@ -17,6 +17,7 @@ public class GroupChatWindow extends JFrame {
     public GroupChatWindow(Socket socket, String username) {
         this.username = username;
         setTitle("群聊室 - " + username);
+        IconLoader.setWindowIcon(this);
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 

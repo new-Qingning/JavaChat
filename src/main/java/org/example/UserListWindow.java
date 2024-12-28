@@ -17,6 +17,7 @@ public class UserListWindow extends JFrame {
         this.socket = socket;
         this.currentUsername = currentUsername;
         setTitle("在线用户 - 当前用户: " + currentUsername);
+        IconLoader.setWindowIcon(this);
         setSize(400, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

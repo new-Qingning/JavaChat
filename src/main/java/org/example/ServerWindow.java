@@ -17,6 +17,7 @@ public class ServerWindow extends JFrame {
 
     public ServerWindow() {
         setTitle("聊天服务器");
+        IconLoader.setWindowIcon(this);
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

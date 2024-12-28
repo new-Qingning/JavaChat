@@ -23,6 +23,7 @@ public class ChatWindow extends JFrame {
         this.sourceUser = sourceUser;
         this.targetUser = targetUser;
         setTitle("与 " + targetUser + " 聊天中");
+        IconLoader.setWindowIcon(this);
         setSize(400, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
