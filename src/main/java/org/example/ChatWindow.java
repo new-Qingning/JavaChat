@@ -24,19 +24,32 @@ public class ChatWindow extends JFrame {
         this.targetUser = targetUser;
         setTitle("与 " + targetUser + " 聊天中");
         IconLoader.setWindowIcon(this);
-        setSize(400, 400);
+        setSize(600, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // 应用全局UI样式
+        UIStyle.setupGlobalUI();
+        UIStyle.decorateFrame(this);
+
+        // 创建主面板
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+
+        // 聊天区域
         chatArea = new JTextArea();
+        UIStyle.decorateTextComponent(chatArea);
         chatArea.setEditable(false);
-        add(new JScrollPane(chatArea), BorderLayout.CENTER);
+        JScrollPane chatScroll = new JScrollPane(chatArea);
+        chatScroll.setBorder(UIStyle.createRoundedBorder());
 
+        // 输入区域
         inputArea = new JTextArea(3, 20);
-        inputArea.setLineWrap(true);
-        inputArea.setWrapStyleWord(true);
+        UIStyle.decorateTextComponent(inputArea);
+        JScrollPane inputScroll = new JScrollPane(inputArea);
 
-        sendButton = new JButton("发送");
+        // 发送按钮
+        sendButton = UIStyle.createStyledButton("发送");
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -44,15 +57,23 @@ public class ChatWindow extends JFrame {
             }
         });
 
-        JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(new JScrollPane(inputArea), BorderLayout.CENTER);
-        inputPanel.add(sendButton, BorderLayout.EAST);
+        // 底部面板
+        JPanel bottomPanel = new JPanel(new BorderLayout(5, 5));
+        bottomPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+        bottomPanel.add(inputScroll, BorderLayout.CENTER);
+        bottomPanel.add(sendButton, BorderLayout.EAST);
 
-        add(inputPanel, BorderLayout.SOUTH);
+        mainPanel.add(chatScroll, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
 
         try {
-            writer = new PrintWriter(socket.getOutputStream(), true);
+            // 重用现有的socket连接
+            this.writer = new PrintWriter(socket.getOutputStream(), true);
+            System.out.println("[ChatWindow] 使用现有连接");
         } catch (IOException e) {
+            System.err.println("[ChatWindow] 输出流创建失败: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -70,28 +91,35 @@ public class ChatWindow extends JFrame {
     }
 
     public void receiveMessage(String message) {
-        SwingUtilities.invokeLater(() -> {
-            if (message.startsWith("private_msg ")) {
-                String[] parts = message.split(" ", 3);
-                if (parts.length == 3) {
-                    chatArea.append(String.format("%s -> 我: %s\n", parts[1], parts[2]));
+        System.out.println("[ChatWindow] 收到消息: " + message);
+
+        // 确保只处理发给当前聊天窗口的消息
+        if (message.startsWith("private_msg")) {
+            String[] parts = message.split(" ", 3);
+            if (parts.length == 3) {
+                String sender = parts[1];
+                // 只处理来自目标用户的消息
+                if (sender.equals(targetUser)) {
+                    SwingUtilities.invokeLater(() -> {
+                        String timestamp = new java.text.SimpleDateFormat("HH:mm:ss").format(new java.util.Date());
+                        chatArea.append(String.format("[%s] %s -> 我: %s\n", timestamp, sender, parts[2]));
+                        chatArea.setCaretPosition(chatArea.getDocument().getLength());
+                    });
                 }
-            } else if (message.startsWith("错误: ")) {
-                String error = message.substring(3);
-                JOptionPane.showMessageDialog(this, error, "错误", JOptionPane.ERROR_MESSAGE);
             }
-            chatArea.setCaretPosition(chatArea.getDocument().getLength());
-        });
+        }
     }
 
     private void sendMessage() {
-        String message = inputArea.getText().trim();
-        if (!message.isEmpty()) {
-            writer.println("private " + sourceUser + " " + targetUser + " " + message);
-            chatArea.append(String.format("Me -> %s: %s\n", targetUser, message));
+        String msg = inputArea.getText().trim();
+        if (!msg.isEmpty()) {
+            String command = "private " + sourceUser + " " + targetUser + " " + msg;
+            System.out.println("[ChatWindow] 发送消息: " + command);
+            writer.println(command);
+            writer.flush();
+            chatArea.append("我 -> " + targetUser + ": " + msg + "\n");
             chatArea.setCaretPosition(chatArea.getDocument().getLength());
-            // 保存消息到数据库
-            ChatHistory.savePrivateMessage(sourceUser, targetUser, message);
+            ChatHistory.savePrivateMessage(sourceUser, targetUser, msg);
             inputArea.setText("");
         }
     }

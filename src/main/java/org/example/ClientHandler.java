@@ -18,41 +18,36 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try {
             writer = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String message;
+
+            System.out.println("[Server] 新客户端连接");
+
             while ((message = reader.readLine()) != null) {
-                System.out.println("Received: " + message);
-                if (message.startsWith("group ")) {
-                    handleGroupMessage(message);
-                } else if (message.startsWith("auth ")) {
-                    handleAuth(message);
-                } else if (message.startsWith("private ")) {
-                    handlePrivateMessage(message);
-                } else if (message.startsWith("message ")) {
-                    handleMessage(message);
-                } else if (message.startsWith("login")) {
-                    handleLogin(message);
-                } else if (message.startsWith("register")) {
-                    handleRegister(message);
-                } else if (message.startsWith("anonymous ")) {
-                    handleAnonymousMessage(message);
-                } else if (message.startsWith("anonymous_join ")) {
-                    handleAnonymousJoin(message);
+                System.out.println("[Server] 收到消息: " + message);
+                try {
+                    if (message.startsWith("group ")) {
+                        handleGroupMessage(message);
+                    } else if (message.startsWith("auth ")) {
+                        handleAuth(message);
+                    } else if (message.startsWith("private ")) {
+                        handlePrivateMessage(message);
+                    } else if (message.startsWith("login")) {
+                        handleLogin(message);
+                    } else {
+                        System.out.println("未知消息类型: " + message);
+                    }
+                } catch (Exception e) {
+                    System.err.println("[Server] 处理消息异常: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("[Server] 连接异常: " + e.getMessage());
         } finally {
-            if (username != null) {
-                ServerWindow.updateUserStatus(username, false); // 更新状态为离线
-            }
-            clientHandlers.remove(this);
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            handleDisconnection();
         }
     }
 
@@ -61,13 +56,16 @@ public class ClientHandler implements Runnable {
         if (parts.length == 2) {
             String requestedUsername = parts[1];
             // 验证用户名是否有效
+            System.out.println("[Server] 处理认证请求: " + requestedUsername);
             if (isValidUsername(requestedUsername)) {
                 this.username = requestedUsername;
-                writer.println("认证成功"); // 保持与客户端期望的响应一致
-                System.out.println("用户认证成功: " + username);
+                writer.println("认证成功");
+                writer.flush(); // 确保立即发送
+                System.out.println("[Server] 用户认证成功: " + username);
             } else {
                 writer.println("认证失败");
-                System.out.println("用户认证失败: " + requestedUsername);
+                writer.flush();
+                System.out.println("[Server] 用户认证失败: " + requestedUsername);
             }
         }
     }
@@ -149,29 +147,37 @@ public class ClientHandler implements Runnable {
     }
 
     private void handlePrivateMessage(String message) {
-        String[] parts = message.split(" ", 4);
-        if (parts.length == 4) {
-            String sender = parts[1];
-            String recipient = parts[2];
-            String content = parts[3];
+        try {
+            String[] parts = message.split(" ", 4);
+            if (parts.length == 4) {
+                String sender = parts[1];
+                String recipient = parts[2];
+                String content = parts[3];
 
-            if (!sender.equals(username)) {
-                writer.println("error 无效的发送者身份");
-                return;
-            }
+                System.out.println("[Server] 处理私聊消息:");
+                System.out.println("发送者: " + sender);
+                System.out.println("接收者: " + recipient);
+                System.out.println("内容: " + content);
 
-            boolean sent = false;
-            for (ClientHandler handler : clientHandlers) {
-                if (recipient.equals(handler.getUsername())) {
-                    handler.writer.println("private_msg " + sender + " " + content);
-                    sent = true;
-                    break;
+                // 转发消息
+                for (ClientHandler handler : clientHandlers) {
+                    if (recipient.equals(handler.getUsername())) {
+                        String forwardMsg = "private_msg " + sender + " " + content;
+                        System.out.println("[Server] 转发消息: " + forwardMsg);
+                        handler.writer.println(forwardMsg);
+                        handler.writer.flush();
+                        return;
+                    }
                 }
-            }
 
-            if (!sent) {
-                writer.println("error 用户离线或未找到");
+                // 未找到接收者
+                System.out.println("[Server] 接收者不在线: " + recipient);
+                writer.println("error 用户不在线");
+                writer.flush();
             }
+        } catch (Exception e) {
+            System.err.println("[Server] 处理私聊消息异常: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -230,6 +236,21 @@ public class ClientHandler implements Runnable {
             writer.println("user " + user.getUsername());
         }
         writer.println("end_of_list");
+    }
+
+    private void handleDisconnection() {
+        if (username != null) {
+            System.out.println("用户断开连接: " + username);
+            ServerWindow.updateUserStatus(username, false);
+        }
+        clientHandlers.remove(this);
+        try {
+            if (!socket.isClosed()) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getUsername() {

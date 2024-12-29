@@ -47,22 +47,18 @@ public class UserListWindow extends JFrame {
 
     private void openChatWindow(String selectedUsername) {
         try {
-            Socket chatSocket = new Socket(socket.getInetAddress(), socket.getPort());
-            PrintWriter writer = new PrintWriter(chatSocket.getOutputStream(), true);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(chatSocket.getInputStream()));
+            // 使用现有的socket连接，而不是创建新的
+            ChatWindow chatWindow = new ChatWindow(socket, currentUsername, selectedUsername);
+            System.out.println("[Client] 开始监听消息");
+            startMessageListener(socket, chatWindow);
+            System.out.println("[Client] 聊天窗口已创建");
 
-            // 发送身份验证
+            // 发送认证消息
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println("auth " + currentUsername);
-            String response = reader.readLine();
 
-            if ("认证成功".equals(response)) { // 修改这里以匹配服务器返回的消息
-                ChatWindow chatWindow = new ChatWindow(chatSocket, currentUsername, selectedUsername);
-                startMessageListener(chatSocket, chatWindow);
-            } else {
-                chatSocket.close();
-                JOptionPane.showMessageDialog(this, "身份验证失败");
-            }
         } catch (IOException ex) {
+            System.err.println("[Client] 连接错误: " + ex.getMessage());
             JOptionPane.showMessageDialog(null, "连接错误: " + ex.getMessage());
         }
     }
@@ -101,15 +97,26 @@ public class UserListWindow extends JFrame {
 
     private void startMessageListener(Socket socket, ChatWindow chatWindow) {
         new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                System.out.println("[MessageListener] 开始监听消息");
                 String message;
+
+                // 保持监听状态
                 while ((message = reader.readLine()) != null) {
                     final String msg = message;
-                    SwingUtilities.invokeLater(() -> chatWindow.receiveMessage(msg));
+                    System.out.println("[MessageListener] 收到消息: " + msg);
+
+                    // 将所有消息转发到聊天窗口
+                    SwingUtilities.invokeLater(() -> {
+                        if (msg.startsWith("private_msg") || msg.startsWith("error")) {
+                            chatWindow.receiveMessage(msg);
+                        }
+                    });
                 }
             } catch (IOException e) {
-                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(chatWindow, "连接已断开"));
-                chatWindow.dispose();
+                System.err.println("[MessageListener] 异常: " + e.getMessage());
+                e.printStackTrace();
             }
         }).start();
     }

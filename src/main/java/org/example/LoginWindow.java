@@ -19,32 +19,64 @@ public class LoginWindow extends JFrame {
         this.socket = socket;
         setTitle("登录");
         IconLoader.setWindowIcon(this);
-        setSize(300, 150);
+        setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Create components
-        JLabel idLabel = new JLabel("账号:");
-        idText = new JTextField(20);
-        JLabel usernameLabel = new JLabel("用户名:");
-        usernameField = new JTextField(15);
-        JLabel passwordLabel = new JLabel("密码:");
-        passwordText = new JPasswordField(20);
-        JButton loginButton = new JButton("登录");
-        JButton registerButton = new JButton("注册");
+        // 应用全局UI样式
+        UIStyle.setupGlobalUI();
+        UIStyle.decorateFrame(this);
 
-        // Set layout manager
-        setLayout(new GridLayout(4, 2));
+        // 创建主面板
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+        GridBagConstraints gbc = new GridBagConstraints();
 
-        // Add components to the frame
-        add(idLabel);
-        add(idText);
-        add(usernameLabel);
-        add(usernameField);
-        add(passwordLabel);
-        add(passwordText);
-        add(registerButton);
-        add(loginButton);
+        // 创建带样式的组件
+        JLabel titleLabel = new JLabel("用户登录", SwingConstants.CENTER);
+        titleLabel.setFont(UIStyle.TITLE_FONT);
+        titleLabel.setForeground(UIStyle.PRIMARY_COLOR);
+
+        // 修改这部分 - 使用类成员变量而不是局部变量
+        idText = new JTextField(15);
+        passwordText = new JPasswordField(15);
+        UIStyle.decorateTextComponent(idText);
+        UIStyle.decorateTextComponent(passwordText);
+
+        JButton loginButton = UIStyle.createStyledButton("登录");
+        JButton registerButton = UIStyle.createStyledButton("注册");
+
+        // 布局组件
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        mainPanel.add(titleLabel, gbc);
+
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        mainPanel.add(new JLabel("ID:"), gbc);
+        gbc.gridx = 1;
+        mainPanel.add(idText, gbc); // 使用idText而不是idField
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        mainPanel.add(new JLabel("密码:"), gbc);
+        gbc.gridx = 1;
+        mainPanel.add(passwordText, gbc); // 使用passwordText而不是passwordField
+
+        // 按钮面板
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        buttonPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+        buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
+
+        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        mainPanel.add(buttonPanel, gbc);
+
+        add(mainPanel);
 
         // Add action listener to the login button
         loginButton.addActionListener(new ActionListener() {

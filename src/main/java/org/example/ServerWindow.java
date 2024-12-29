@@ -3,6 +3,7 @@ package org.example;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
@@ -21,28 +22,58 @@ public class ServerWindow extends JFrame {
     public ServerWindow() {
         setTitle("聊天服务器");
         IconLoader.setWindowIcon(this);
-        setSize(400, 300);
+        setSize(500, 400); // 调整窗口大小
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        // 应用全局UI样式
+        UIStyle.setupGlobalUI();
+        UIStyle.decorateFrame(this);
 
         // 加载状态图标
         onlineIcon = loadIcon("images/online.png");
         offlineIcon = loadIcon("images/offline.png");
 
-        // Create components
+        // 创建带样式的组件
         JLabel ipLabel = new JLabel("服务器IP地址: " + getIpAddress());
-        String[] columnNames = { "ID", "Username", "Password", "Status" };
-        tableModel = new DefaultTableModel(columnNames, 0); // 初始化tableModel
+        ipLabel.setFont(UIStyle.TITLE_FONT);
+        ipLabel.setForeground(UIStyle.PRIMARY_COLOR);
+
+        String[] columnNames = { "ID", "用户名", "密码", "状态" };
+
+        tableModel = new DefaultTableModel(columnNames, 0);
         JTable userTable = new JTable(tableModel);
+
+        // 美化表格
+        userTable.setFont(UIStyle.MAIN_FONT);
+        userTable.setRowHeight(30);
+        userTable.setShowGrid(true);
+        userTable.setGridColor(UIStyle.PRIMARY_COLOR.brighter());
+
+        // 美化表头 - 修改这部分
+        JTableHeader header = userTable.getTableHeader();
+        header.setFont(UIStyle.TITLE_FONT);
+        header.setBackground(Color.WHITE); // 改为白色背景
+        header.setForeground(UIStyle.PRIMARY_COLOR); // 使用与IP地址相同的颜色
+        header.setReorderingAllowed(false);
+        header.setPreferredSize(new Dimension(header.getPreferredSize().width, 35));
+
         // 设置状态列的渲染器
         userTable.getColumnModel().getColumn(3).setCellRenderer(new StatusColumnRenderer());
 
-        // Set layout manager
-        setLayout(new BorderLayout());
+        // 创建带样式的滚动面板
+        JScrollPane scrollPane = new JScrollPane(userTable);
+        scrollPane.setBorder(UIStyle.createRoundedBorder());
 
-        // Add components to the frame
-        add(ipLabel, BorderLayout.NORTH);
-        add(new JScrollPane(userTable), BorderLayout.CENTER);
+        // 创建面板并设置布局
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        mainPanel.add(ipLabel, BorderLayout.NORTH);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        add(mainPanel);
 
         // Load users from the database
         loadUsers();
@@ -132,11 +163,25 @@ public class ServerWindow extends JFrame {
             if (value != null) {
                 if ("online".equals(value)) {
                     label.setIcon(onlineIcon);
+                    label.setToolTipText("在线");
                 } else {
                     label.setIcon(offlineIcon);
+                    label.setToolTipText("离线");
                 }
             }
+
+            // 设置单元格样式
+            if (isSelected) {
+                label.setBackground(UIStyle.PRIMARY_COLOR.brighter());
+                label.setForeground(Color.WHITE);
+            } else {
+                label.setBackground(row % 2 == 0 ? Color.WHITE : UIStyle.BACKGROUND_COLOR);
+                label.setForeground(UIStyle.TEXT_COLOR);
+            }
+
             label.setHorizontalAlignment(JLabel.CENTER);
+            label.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+
             return label;
         }
     }
